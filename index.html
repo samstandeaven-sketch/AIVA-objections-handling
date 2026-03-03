@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Aircall AI Virtual Agent</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --green:#00BD82;--green-light:#C2FFEC;--green-mid:#5BF1B2;
+    --dark:#012635;--dark2:#073F56;--grey:#F1F3F8;--grey2:#F7F8FC;
+    --blue:#3086EE;--blue-light:#D6E7FC;--blue-dark:#005ABB;
+    --purple:#6955DA;--purple-light:#E1DDF8;
+    --yellow:#FFC000;--yellow-light:#FFF2CC;
+    --red:#E85B79;--red-light:#FADEE4;
+    --white:#fff;
+  }
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--grey2);color:var(--dark);min-height:100vh}
+  header{background:var(--dark);padding:18px 24px;display:flex;align-items:center;gap:12px}
+  .logo-mark{width:32px;height:32px;background:var(--green);border-radius:8px;display:flex;align-items:center;justify-content:center}
+  .logo-mark svg{width:18px;height:18px;fill:var(--dark)}
+  header h1{color:var(--white);font-size:1.05rem;font-weight:600}
+  #breadcrumb{display:flex;align-items:center;gap:6px;padding:14px 24px 0;font-size:.8rem;color:var(--dark2);flex-wrap:wrap}
+  #breadcrumb .bc-link{cursor:pointer;color:var(--green);font-weight:600}
+  #breadcrumb .bc-link:hover{text-decoration:underline}
+  #breadcrumb .sep{color:#aaa}
+  main{padding:20px 24px 40px;max-width:880px;margin:0 auto}
+  .screen-title{font-size:1.25rem;font-weight:700;color:var(--dark);margin-bottom:6px}
+  .screen-sub{font-size:.88rem;color:var(--dark2);margin-bottom:20px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+  .cat-card{background:var(--white);border:2px solid transparent;border-radius:14px;padding:20px 18px;cursor:pointer;transition:all .18s;position:relative;overflow:hidden}
+  .cat-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.1)}
+  .cat-card .cat-icon{font-size:1.6rem;margin-bottom:10px}
+  .cat-card h3{font-size:.95rem;font-weight:700;color:var(--dark);margin-bottom:4px}
+  .cat-card p{font-size:.78rem;color:var(--dark2);line-height:1.4}
+  .cat-card .badge{position:absolute;top:14px;right:14px;font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:20px}
+  .cat-card .bar{position:absolute;bottom:0;left:0;right:0;height:3px;transform:scaleX(0);transform-origin:left;transition:transform .18s}
+  .cat-card:hover .bar{transform:scaleX(1)}
+  .obj-list{display:flex;flex-direction:column;gap:10px}
+  .obj-item{background:var(--white);border:2px solid transparent;border-radius:12px;padding:16px 18px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;transition:all .15s}
+  .obj-item:hover{box-shadow:0 4px 14px rgba(0,0,0,.08)}
+  .obj-item-text{font-size:.95rem;font-weight:600;color:var(--dark);line-height:1.4}
+  .obj-item-arrow{font-size:1.1rem;flex-shrink:0}
+  .tt-wrap{background:var(--white);border-radius:16px;padding:24px;box-shadow:0 4px 18px rgba(1,38,53,.07)}
+  .tt-objection{border-left:4px solid var(--green);border-radius:8px;padding:14px 16px;margin-bottom:22px;background:var(--grey2)}
+  .tt-objection label{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:4px}
+  .tt-objection p{font-size:.95rem;font-weight:600;color:var(--dark)}
+  .tt-section{margin-bottom:20px}
+  .tt-section h4{font-size:.75rem;font-weight:700;color:var(--dark2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+  .dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex-shrink:0}
+  .tt-body{font-size:.92rem;line-height:1.65;color:var(--dark2)}
+  .tt-body ul{padding-left:18px;display:flex;flex-direction:column;gap:7px}
+  .tt-body li{line-height:1.55}
+  .dq-list{display:flex;flex-direction:column;gap:15px}
+  .dq-item{border-radius:8px;overflow:hidden;border-left:3px solid}
+  .dq-q{font-weight:600;color:var(--dark);padding:11px 14px;font-size:.9rem;line-height:1.5;background:#F7F8FC}
+  .dq-fyi{font-size:.82rem;padding:8px 14px;font-style:italic;border-top:1px solid rgba(0,0,0,.06);background:#F7F8FC;color:var(--dark2)}
+  .dq-fyi strong{font-style:normal;font-weight:700;margin-right:4px}
+  .dq-tt{font-size:.88rem;padding:10px 14px;line-height:1.55;border-top:1px solid rgba(0,0,0,.06)}
+  .dq-tt ul{padding-left:16px;display:flex;flex-direction:column;gap:6px}
+  .back-btn{display:inline-flex;align-items:center;gap:6px;background:var(--grey);border:none;border-radius:8px;padding:8px 14px;font-size:.85rem;font-weight:600;color:var(--dark2);cursor:pointer;margin-bottom:18px;transition:background .15s}
+  .back-btn:hover{background:var(--green-light)}
+  .hidden{display:none!important}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo-mark">
+    <svg viewBox="0 0 24 24"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1L6.6 10.8z"/></svg>
+  </div>
+  <h1>🤖 AI Virtual Agent</h1>
+</header>
+<div id="breadcrumb"></div>
+<main>
+  <div id="screen-cats">
+    <div class="screen-title">What type of objection are you facing?</div>
+    <div class="screen-sub">Select a category to see common objections and talk tracks.</div>
+    <div class="grid" id="cat-grid"></div>
+  </div>
+  <div id="screen-objs" class="hidden">
+    <button class="back-btn" onclick="goTo('cats')">← Back to categories</button>
+    <div class="screen-title" id="obj-title"></div>
+    <div class="screen-sub" id="obj-sub"></div>
+    <div class="obj-list" id="obj-list"></div>
+  </div>
+  <div id="screen-tt" class="hidden">
+    <button class="back-btn" onclick="goTo('objs')">← Back to objections</button>
+    <div class="tt-wrap" id="tt-content"></div>
+  </div>
+</main>
+<script>
+const data = [
+  {
+    id:"voice-agent",
+    icon:"🤖",
+    name:"Aircall's Virtual Agent vs. Point Solutions",
+    desc:"Point solutions, in-house builds, pricing comparisons",
+    accentColor:"#00BD82", badgeBg:"#C2FFEC", badgeColor:"#00724E",
+    objections:[
+      {
+        id:"point-solution",
+        text:"We're considering a point solution.",
+        discoveryQuestions:[
+          {q:"Does [solution] come with telco coverage?", why:"Most solutions are small startups providing an AI layer only - no infrastructure.", tt:`<ul><li>Aircall owns the entire telco through its global partnerships, native routing & AI deployments, so all communications are centralised and you don't need to juggle between providers.</li></ul>`},
+          {q:"Which provider do they rely on for telephony?", why:"Most solutions exclusively plug in to Twilio, which heavily compromises reliability & call quality.", tt:`<ul><li>Aircall heavily invests in local partnerships globally and absorbs all of these costs to create strong infrastructure that ensures call reliability and prevents the expensive costs associated with a poor call experience.</li></ul>`},
+          {q:"How does [solution] integrate with your tools?", why:"Most solutions rely on external routing, meaning data gets lost.", tt:`<ul><li>Through our native business integrations & Virtual Agent solution, all data is captured - you'll avoid the silos that often come with a standalone third-party agent solution.</li></ul>`},
+          {q:"How much have you benefited from deployment support?", why:"95% of AI deployments fail in enterprise - POCs can succeed but full enterprise deployment is far more complex.", tt:`<ul><li>Aircall provides a white glove service - a dedicated team to help you configure, localise, and deploy virtual agents quickly, all included within our minutes pricing.</li></ul>`}
+        ],
+        talktrack:``
+      },
+      {
+        id:"in-house",
+        text:"We're building it in-house.",
+        discoveryQuestions:[
+          {q:"How are you planning to integrate the Virtual Agent with your telephony & other tools?", why:"Building custom integrations between a VA and a telephony solution often leads to technical debt and data loss.", tt:`<ul><li>Aircall's Virtual Agents are natively integrated with our products. The handover from AI to human is extremely quick to set up and seamless - context, notes, and history pass automatically in one platform, with no engineering needed on your end.</li></ul>`},
+          {q:"How many resources are you planning to use just to debug your Virtual Agents and keep up with the latest model upgrades?", why:"VAs are extremely resource-intensive - they require constant maintenance to fix integration bugs, re-tuning & model training.", tt:`<ul><li>Aircall manages its infrastructure as part of its offering and constantly improves our product based on the latest models. This represents hours of engineering dedicated to re-tuning & monitoring, which you can spend on your core product instead.</li></ul>`}
+        ],
+        talktrack:``
+      },
+      {
+        id:"cheaper-point",
+        text:"You're more expensive than [point solution].",
+        discoveryQuestions:[
+          {q:"Can you walk me through what's included in the price of [solution]?", why:"Point solutions often appear much cheaper, but only because they represent one layer of a more complex package.", tt:`<ul><li>A cheaper rate looks great but usually doesn't include setup fees, the cost of telephony, or the engineering resources needed. Aircall doesn't just charge for minutes - we also provide a white glove service to maximise your AI deployment and invest continuous resources in using the latest technologies to make our Virtual Agents more efficient and cheaper every quarter. All of this is packaged into one transparent pricing model.</li></ul>`}
+        ],
+        talktrack:``
+      }
+    ]
+  },
+  {
+    id:"voice-quality",
+    icon:"🎙️",
+    name:"Voice Quality & Naturalness",
+    desc:"Robotic sound, latency, reading back numbers, multilingual tone",
+    accentColor:"#6955DA", badgeBg:"#E1DDF8", badgeColor:"#2022AE",
+    objections:[
+      {
+        id:"robotic-phone",
+        text:"Why does the AI Virtual Agent sound fine when I test in the browser, but robotic when I speak to it over a phone network?",
+        talktrack:`<ul>
+          <li>Acknowledge that having a natural-sounding voice is important, and that's why the AI Virtual Agent uses the most advanced voices available today.</li>
+          <li>Phone networks compress every voice (human or AI) into a limited frequency band. In-browser you get 16-24 kHz fidelity; over the telco network, everything gets compressed to ~3.4 kHz. This is why even real human voices sound different on a call compared to in person.</li>
+          <li>The underlying AI Virtual Agent voices are state-of-the-art, and what callers hear is still as natural as telephony allows, matching the quality of any leading solution.</li>
+          <li>Use an analogy: it's like watching HD content on an older screen - the source is still HD, it just plays back differently depending on the channel.</li>
+          <li>We continue to optimise for phone playback with our voice partners, ensuring the experience becomes even smoother and more natural with each improvement.</li>
+          <li><em>Totally fair point - what you're hearing is the phone network's compressed version of the voice. In reality, the underlying voice is state-of-the-art and as natural as it gets. Within telephony limits, this is about as close to human as possible, and the real win is that it pairs that natural tone with the intelligence to resolve issues and hand off seamlessly.</em></li>
+        </ul>`
+      },
+      {
+        id:"numbers-email",
+        text:"Why does the AI Virtual Agent sound unnatural when reading back numbers or email addresses (sometimes it speaks too fast)?",
+        talktrack:`<ul>
+          <li>Acknowledge that reading out phone numbers and email addresses <strong>is one of the trickiest areas for any AI voice</strong>, and today it can sometimes sound rushed or robotic.</li>
+          <li>Reassure them this is a known limitation and an active focus area with our voice technology partners. Improvements are already in progress to make these read-backs clearer and more natural.</li>
+          <li>Beyond these edge cases, the AI Virtual Agent is designed to deliver a human-like, conversational experience, and we're continuously tuning it to ensure every interaction feels smooth and caller-friendly.</li>
+        </ul>`
+      },
+      {
+        id:"multilingual-tone",
+        text:"Why does the non-English AI Virtual Agent sound inconsistent - like multiple people are speaking instead of one consistent voice/tone?",
+        talktrack:`<ul>
+          <li>Acknowledge that consistency of voice and tone is crucial for delivering a natural caller experience - we fully agree this is key to long-term success.</li>
+          <li>Today, <strong>our priority has been to ensure reliability and accuracy in each supported language</strong> (e.g. avoiding errors like repeating numbers in the wrong language). Getting this baseline right matters most for usability.</li>
+          <li>Refining tone and consistency is firmly on the roadmap. Once accuracy is locked in, we're investing in more natural, unified voices across all languages to make the experience feel seamless and human-like.</li>
+          <li>This is part of our broader commitment to continual improvement, and the AI Virtual Agent will only get more natural and consistent over time.</li>
+        </ul>`
+      }
+    ]
+  },
+  {
+    id:"language",
+    icon:"🌍",
+    name:"Language & Accessibility",
+    desc:"Accent handling, jargon, supported languages",
+    accentColor:"#00BD82", badgeBg:"#C2FFEC", badgeColor:"#00724E",
+    objections:[
+      {
+        id:"accents",
+        text:"How well does the AI Virtual Agent handle different languages or regional accents?",
+        talktrack:`<ul>
+          <li>The AI Virtual Agent is built to understand supported languages regardless of regional accent. For example, it can process English naturally whether spoken with a Spanish, French, or US accent. This makes it well-suited for diverse customer bases, ensuring callers don't have to adapt how they speak.</li>
+          <li><strong>Language coverage and accent handling will continue to improve</strong> - our roadmap includes ongoing tuning and expanded languages to make the experience even more natural across regions.</li>
+        </ul>`
+      },
+      {
+        id:"jargon",
+        text:"How effective is the AI Virtual Agent in learning specific jargon and acronyms that may be industry-specific?",
+        talktrack:`<ul>
+          <li>The AI Virtual Agent doesn't automatically know industry jargon or acronyms - <strong>it needs to be trained with them</strong>. You can add those terms directly into the Knowledge Base, and you can now also add public URLs and webpages as knowledge sources - making it much easier to pull in existing content.</li>
+          <li>This gives you full control: <strong>once added, the AI recognises and responds to your industry language accurately</strong>, ensuring conversations feel tailored to your business context.</li>
+          <li>Expanded knowledge integrations including CRM and external sources are also coming, making it even easier to keep the Virtual Agent up to date over time.</li>
+        </ul>`
+      },
+      {
+        id:"languages-supported",
+        text:"What languages does the AI Virtual Agent support?",
+        talktrack:`<ul>
+          <li>The AI Virtual Agent <strong>currently supports English, French, German, Spanish, Dutch, Italian, and Portuguese</strong>.</li>
+          <li><em>If another language is needed, let them know you'll pass their request to the Product team.</em></li>
+        </ul>`
+      }
+    ]
+  },
+  {
+    id:"call-handling",
+    icon:"📞",
+    name:"Call Handling & Transfers",
+    desc:"Knowledge base limits, concurrent calls, routing capabilities",
+    accentColor:"#3086EE", badgeBg:"#D6E7FC", badgeColor:"#005ABB",
+    objections:[
+      {
+        id:"kb-limit",
+        text:"Why can't we increase the size limit of the Knowledge Base? We want to place all our text in one place but it exceeds the 20K character limit.",
+        talktrack:`<ul>
+          <li>Best practice with AI Virtual Agents is to <strong>keep the scope focused</strong>. The Virtual Agent performs best when trained on concise, topic-specific knowledge, rather than when expected to answer anything and everything.</li>
+          <li>Recommend <strong>creating multiple specialised agents, each tied to a different Knowledge Base</strong> (e.g., product info, support policies, pricing). Callers reach the right expert instantly. Smartflows can guide callers to the right AI Virtual Agent (e.g., "Press 1 for product info, 2 for Support").</li>
+          <li>You can now also add public URLs and webpages as knowledge sources - making it much easier to keep content current without manual text uploads. Full website domains with optional subpages are supported too.</li>
+          <li>Intent-based routing is now also available - callers can be routed automatically based on what they say, without needing to press menu options at all, making multi-agent setups even more seamless.</li>
+        </ul>`
+      },
+      {
+        id:"concurrent-calls",
+        text:"Can the AI Virtual Agent handle multiple calls (up to N) at the same time? Is there a capacity limit?",
+        talktrack:`<ul>
+          <li>The <strong>AI Virtual Agent can handle calls concurrently</strong> - there is no practical cap today. Customers are already running high volumes without hitting a ceiling.</li>
+          <li>Capacity <strong>scales automatically with demand</strong>. Unlike human agents, the AI Virtual Agent can flex instantly to absorb spikes in inbound calls (e.g., product launches, seasonal peaks, outages).</li>
+          <li>If any technical ceiling were ever identified, our <strong>engineering team can raise it</strong> - scalability will never be a blocker.</li>
+        </ul>`
+      },
+      {
+        id:"front-desk",
+        text:"Can the AI Virtual Agent be used as a front-desk reception (conversational IVR, voice command routing, etc.)?",
+        talktrack:`<ul>
+          <li>Yes - <strong>intent-based routing is now live</strong>. The AI Virtual Agent listens to the caller, understands their request, and routes them directly to the right agent or team with full context - no menu pressing required.</li>
+          <li>This replaces a traditional IVR and how rigid these often are - you'll reduce IVR fatigue and ensure a much smoother caller experience.</li>
+        </ul>`
+      }
+    ]
+  },
+  {
+    id:"latency",
+    icon:"⚡",
+    name:"Latency & Responsiveness",
+    desc:"Response delays, AI interruptions, call naturalness",
+    accentColor:"#E85B79", badgeBg:"#FADEE4", badgeColor:"#B1264D",
+    objections:[
+      {
+        id:"response-delay",
+        text:"Why is there such a delay between the caller speaking and the AI responding? Is there a plan to improve responsiveness?",
+        talktrack:`<ul>
+          <li>If they notice latency while testing from the Admin Dashboard, <strong>it's usually due to audio compression differences</strong>. Live calls are compressed and transmitted faster, while dashboard tests prioritise maximum audio quality, which can be more demanding on bandwidth.</li>
+          <li><strong>Internet conditions also play a role.</strong> Bandwidth-heavy apps running in parallel (e.g., Zoom) can affect responsiveness in real time.</li>
+          <li><strong>Responsiveness is a top priority.</strong> Our engineering team is rolling out latency optimisations throughout 2025, so customers can expect steady improvements in speed and overall experience.</li>
+        </ul>`
+      },
+      {
+        id:"talking-over",
+        text:"The AI keeps talking over callers - can you fix the timing so it feels more natural?",
+        talktrack:`<ul>
+          <li>Acknowledge that this can happen in cases of latency. The AI may take a moment to process what the caller said, and once ready, it begins speaking - even if the caller hasn't fully finished.</li>
+          <li>Reassure them this is a top priority. Our engineering team is actively optimising responsiveness so the AI Virtual Agent feels more natural in live conversations.</li>
+          <li>Encourage them to share specific examples. <strong>Providing Aircall Call IDs where this occurs helps our product team</strong> pinpoint and resolve issues faster.</li>
+          <li>Updates rolling out this year will <strong>reduce interruptions and make back-and-forth conversations feel even more natural.</strong></li>
+        </ul>`
+      }
+    ]
+  },
+  {
+    id:"roi",
+    icon:"💰",
+    name:"ROI & Perceived Value",
+    desc:"Cost vs. human agents, BPO comparisons, pricing justification",
+    accentColor:"#005ABB", badgeBg:"#D6E7FC", badgeColor:"#005ABB",
+    objections:[
+      {
+        id:"roi-vs-person",
+        text:"What kind of ROI can we expect from using this instead of a person?",
+        talktrack:`<ul>
+          <li>ROI is typically high because the AI Virtual Agent <strong>runs on a low per-minute cost model</strong> - far below the cost of human labor for routine calls.
+            <ul>
+              <li><strong>Sales:</strong> High ROI when the size of deals closed via missed lead management outweigh the cost of VA conversations (# minutes x price per minute).</li>
+              <li><strong>Support:</strong> High ROI when VA cost per minute is lower than human agent labor costs per minute.</li>
+            </ul>
+          </li>
+          <li>Current pricing starts at $0.35/min (500 min bundle), $0.29/min (2,500 min bundle), and from $0.19/min for 10,000+ minutes. Pay-as-you-go is available at $0.49/min.</li>
+          <li>To work out a more accurate understanding of ROI, refer to our <em>[ROI calculator]</em>.</li>
+        </ul>`
+      },
+      {
+        id:"expensive-voicemail",
+        text:"This feels like an expensive voicemail - how is this better than hiring a human?",
+        talktrack:`<ul>
+          <li>The AI Virtual Agent is so much more than a voicemail replacement. Unlike voicemail, <strong>it engages callers in real time</strong> - answering questions, qualifying leads, and capturing structured data that a simple recording never could.</li>
+          <li><strong>In sales</strong>, it prevents missed revenue by engaging leads immediately. <strong>In support</strong>, it deflects repetitive queries so agents spend more time on complex, high-value conversations.</li>
+          <li>Position it as <strong>a virtual teammate</strong>. It handles routine questions at scale and passes complex calls to your team with full context, elevating human agents to focus where they add the most value.</li>
+          <li>Use the ROI calculator to show how quickly the AI Virtual Agent pays for itself compared to human labor or lost opportunities.</li>
+        </ul>`
+      },
+      {
+        id:"bpo-comparison",
+        text:"Why should I use the Aircall AI Virtual Agent when a human agent from an offshore BPO based in India or Philippines has a comparable price per minute?",
+        talktrack:`<ul>
+          <li>Even if the per-minute cost is similar, <strong>the AI Virtual Agent performs like your best offshore agent on their best day</strong> - 24/7, instantly, with zero training, no drop-off in quality, and full KB sync built in. That's not just about cost - it's a performance upgrade.</li>
+          <li>It responds instantly, any time of day, including weekends and holidays. <strong>There are no queues or wait times</strong> for your customers.</li>
+          <li>It <strong>scales automatically during volume spikes</strong>, with no need to hire, train, or schedule additional staff.</li>
+          <li>It delivers a <strong>consistent caller experience</strong>, never gets tired or distracted, and always follows the same logic.</li>
+          <li>It <strong>captures and syncs call details automatically in your CRM</strong>, eliminating manual admin and improving accuracy.</li>
+          <li>There are no training, onboarding, or attrition costs. The AI Virtual Agent is ready to go from day one and improves continuously.</li>
+        </ul>`
+      },
+      {
+        id:"expensive-vs-providers",
+        text:"We're interested in the AI Virtual Agent but why are you so expensive compared to other providers offering services as little as $0.09/min?",
+        talktrack:`<ul>
+          <li>Pricing isn't apples to apples. Lower-cost platforms often advertise a basic rate <strong>that excludes premium voices, advanced LLMs, or key features</strong> - those usually add up quickly.</li>
+          <li>Many low-cost solutions involve DIY. You're responsible for setup, prompt design, voice interruption handling, and ongoing tuning, creating hidden costs in time, resources, and maintenance.</li>
+          <li>With Aircall, you <strong>get a fully managed, plug-and-play solution built directly into your telephony system</strong>. It's production-ready on day one, with high-quality voices, tuned performance, and continuous improvements handled for you.</li>
+          <li>Our pricing is also more competitive than you might think: bundles start at $0.35/min (500 min), $0.29/min (2,500 min), and from $0.19/min at 10,000+ minutes - the more you use, the lower your per-minute rate.</li>
+        </ul>`
+      },
+      {
+        id:"too-expensive",
+        text:"I'm interested, but the AI Virtual Agent is too expensive.",
+        talktrack:`<ul>
+          <li>Ask about their current cost per minute. In many cases, the AI Virtual Agent is already more affordable - especially for teams handling a high volume of short, routine calls.</li>
+          <li>Use the ROI calculator to show how the AI Virtual Agent pays for itself quickly by reducing missed leads, lowering time-to-resolution, and freeing up your team for high-value conversations.</li>
+          <li>Highlight that AIVA now handles intake, follow-up, and live transfer - so you're getting more value per minute.</li>
+          <li>Our tiered pricing means the more you use, the less you pay: 500 min at $0.35/min, 2,500 min at $0.29/min, and 10,000+ min from $0.19/min. There's no need to negotiate - pricing scales naturally as your usage grows.</li>
+        </ul>`
+      }
+    ]
+  },
+  {
+    id:"customisation",
+    icon:"🔧",
+    name:"Customisation & Training",
+    desc:"Connecting external data, knowledge bases, custom virtual agents",
+    accentColor:"#E85B79", badgeBg:"#FADEE4", badgeColor:"#B1264D",
+    objections:[
+      {
+        id:"connect-existing-kb",
+        text:"Can we connect the AI Virtual Agent to pre-existing documents, knowledge bases, databases, CRMs, etc.?",
+        talktrack:`<ul>
+          <li>Yes - you can now add <strong>public URLs and webpages as knowledge sources</strong>, in addition to plain text blocks. This means you can point the Virtual Agent directly at your website or existing content pages without manual copy-pasting.</li>
+          <li>For deeper integrations - such as live CRM lookups or fetching data from helpdesks - <strong>In-Call Context & Actions is now available</strong> to enable the Virtual Agent to retrieve information and perform actions in other tools. This would need to be set up by our FDE team.</li>
+        </ul>`
+      },
+      {
+        id:"own-voice-agent",
+        text:"Can we connect our own virtual agent to Aircall (e.g. for a language that Aircall does not support)?",
+        talktrack:`<ul>
+          <li>Not currently possible - the AI Virtual Agent cannot be replaced with an external agent inside Aircall.</li>
+          <li>Use this as an opportunity to explore the need. <strong>Ask why they want to connect their own agent</strong> - if it's for language coverage, it's worth noting that Aircall now supports English, French, German, Spanish, Dutch, Italian, and Portuguese, with further expansion underway.</li>
+          <li>If it's for specific functionality, confirm with Product whether it's on the roadmap.</li>
+        </ul>`
+      }
+    ]
+  },
+  {
+    id:"analytics",
+    icon:"📊",
+    name:"Analytics & Reporting",
+    desc:"Dashboards, call outcomes, performance visibility",
+    accentColor:"#6955DA", badgeBg:"#E1DDF8", badgeColor:"#2022AE",
+    objections:[
+      {
+        id:"dashboard",
+        text:"Is there a dashboard where we can view all unanswered calls, recordings, and outcomes from the AI Virtual Agent?",
+        talktrack:`<ul>
+          <li>Yes, the AI Virtual Agent <strong>is fully visible in both Live Monitoring and Analytics dashboards across all plans</strong>.</li>
+          <li>You can track real-time and historical data on call volumes, engagement time, and escalation rates, so it's clear exactly where the Virtual Agent is adding value.</li>
+          <li>Use this <strong>data to optimise performance</strong>: see where scripts or questions fall short, improve flows in the moment, and fine-tune over time.</li>
+          <li><strong>AI Virtual Agent-handled calls are excluded from SLA</strong> and queue metrics, so your staffing decisions and alerts reflect only what your human team needs to act on.</li>
+        </ul>`
+      }
+    ]
+  },
+  {
+    id:"automations",
+    icon:"⚙️",
+    name:"Automations & Follow-ups",
+    desc:"Post-call automations, structured data, CRM push",
+    accentColor:"#00BD82", badgeBg:"#C2FFEC", badgeColor:"#00724E",
+    objections:[
+      {
+        id:"followup-automations",
+        text:"Can we set up follow-up automations based on what the caller said or what information the AI Virtual Agent collected, such as sending booking links or SMS messages to callers?",
+        talktrack:`<ul>
+          <li>Not natively for outbound actions like SMS today, but there are two strong options available now.</li>
+          <li>You can use the <strong>comments attribute in the Aircall Calls API/Webhook payload</strong> to capture intake questions and caller responses, then trigger post-call automations using keywords (e.g. sending an SMS). Aircall Professional Services can support these kinds of custom builds.</li>
+          <li><strong>In-Call Context & Actions</strong> - now available for eligible customers - enables the Virtual Agent to take actions in third-party systems in real time during the call (e.g. creating records, booking appointments).</li>
+        </ul>`
+      },
+      {
+        id:"structured-data",
+        text:"Can the AI Virtual Agent extract and push structured data like names or booking requests into an external system?",
+        talktrack:`<ul>
+          <li>Yes - <strong>In-Call Context & Actions is now available</strong> for eligible customers. This enables the AI Virtual Agent to retrieve information from and perform actions in third-party systems such as CRMs, helpdesks, and e-commerce platforms in real time, based on how it's configured for specific call scenarios.</li>
+          <li>For customers not yet eligible, you can use the <strong>comments attribute in the Aircall Calls API/Webhook payload</strong> to capture intake questions and caller responses, then build custom automations using keyword triggers. Aircall Professional Services can help with these builds.</li>
+          <li>Speak to your CSM to confirm eligibility for In-Call Context & Actions and the use cases available.</li>
+        </ul>`
+      }
+    ]
+  },
+  {
+    id:"expense-limits",
+    icon:"🔒",
+    name:"Expense Limits",
+    desc:"Spend controls, threshold notifications, cost predictability",
+    accentColor:"#005ABB", badgeBg:"#D6E7FC", badgeColor:"#005ABB",
+    objections:[
+      {
+        id:"hard-stop",
+        text:"Is it possible to set limits on the AI Virtual Agent so that it will stop working once a threshold is exceeded? We want to avoid the cost exploding unexpectedly.",
+        talktrack:`<ul>
+          <li>There's <strong>no native hard-stop limit today</strong>, but usage is fully transparent - every call and minute is visible in your Dashboard and Analytics, so you can monitor spend in real time.</li>
+          <li>Many customers <strong>set internal alerts or dashboards to track thresholds</strong> (e.g. minutes or costs). If support is needed, your CSM can help configure usage monitoring.</li>
+          <li>Our tiered pricing also means higher volume naturally brings a lower per-minute rate: from $0.35/min at 500 min down to $0.19/min at 10,000+ minutes - so cost scales more favourably as usage grows.</li>
+        </ul>`
+      },
+      {
+        id:"spend-notifications",
+        text:"Is it possible to set notifications (e.g. via email) for different thresholds of monthly expenses incurred by the AI Virtual Agent?",
+        talktrack:`<ul>
+          <li><strong>Native spend notifications aren't available today.</strong> Usage and costs are fully visible in the Dashboard and Analytics, where you can monitor in real time.</li>
+          <li>Product is exploring cost-control features, including notifications. In the meantime, our tiered pricing ensures the per-minute cost decreases automatically as usage grows - 500 min at $0.35/min, 2,500 min at $0.29/min, 10,000+ from $0.19/min - keeping spend predictable as you scale.</li>
+        </ul>`
+      }
+    ]
+  },
+  {
+    id:"adoption",
+    icon:"🤝",
+    name:"Adoption Confidence & Trust",
+    desc:"Customer acceptance, ease of use, case studies, team concerns",
+    accentColor:"#E85B79", badgeBg:"#FADEE4", badgeColor:"#B1264D",
+    objections:[
+      {
+        id:"customer-hangup",
+        text:"How do we know our customers or leads will actually respond well to an AI Virtual Agent? What if people hang up as soon as they realise it's not a real person?",
+        talktrack:`<ul>
+          <li>Many callers actually prefer an AI Virtual Agent over voicemail or no answer - it feels <strong>more responsive and professional</strong> than being sent to a dead end.</li>
+          <li>The AI Virtual Agent uses a natural, human-like voice designed to make the interaction feel seamless. <em>Offer to play a demo clip or share a demo line so they can experience it firsthand.</em></li>
+          <li>Position it as <strong>an augmentation of your human team, not a replacement</strong>: it handles routine intake and FAQs, while live transfer ensures that valuable or complex conversations still go straight to a human.</li>
+          <li><em>Adoption data shows that acceptance is only increasing. Customers get value from faster responses, structured intake, and fewer missed opportunities, which outweighs initial hesitation.</em></li>
+        </ul>`
+      },
+      {
+        id:"not-tech-savvy",
+        text:"AI sounds beyond me... I'm not very tech savvy.",
+        talktrack:`<ul>
+          <li>No technical skills needed. Most customers launch AIVA in under 10 minutes.</li>
+          <li>You can test and build flows easily in Smartflows, and nothing goes live until you're ready.</li>
+          <li>There are no custom integrations or dev work - it's all built into Aircall.</li>
+        </ul>`
+      },
+      {
+        id:"case-studies",
+        text:"Do you have any data or case studies on how effective AI Virtual Agents are?",
+        talktrack:`<ul>
+          <li><strong>The Grout Guy</strong> implemented the AI Virtual Agent to reduce missed calls and improve efficiency: <em>"It greatly helped our missed call rate when we first implemented it. Every missed call would direct to the AI Virtual Agent."</em> - Anthony Messina, Salesforce Platform Manager. <a href="https://aircall.io/customer-stories/the-grout-guy/" target="_blank" style="color:#00BD82">Read case study</a></li>
+          <li><strong>Unbiased</strong> uses the AI Virtual Agent to relieve pressure on a lean support team and maintain service quality while scaling: <em>"With Aircall's AI Virtual Agent, we've achieved a 23% uplift in our service level. It's like gaining an extra team member but without the added headcount."</em> - Daniel Piggott-Stewart, Head of Customer Support. <a href="https://aircall.io/customer-stories/unbiased/" target="_blank" style="color:#00BD82">Read case study</a></li>
+        </ul>`
+      },
+      {
+        id:"not-replacing-team",
+        text:"We're not looking to replace our teams with AI Agents.",
+        talktrack:`<ul>
+          <li>AIVA is built to <strong>support your team, not replace it</strong>. It frees agents from routine tasks so they can focus on high-value work.</li>
+          <li>AIVA enables live transfer with full context, so callers don't repeat themselves - <strong>enhancing the human touch</strong>.</li>
+          <li>Frame it as a smart <strong>first step in the journey</strong>: start small (e.g. out-of-hours calls) and scale where it makes sense.</li>
+        </ul>`
+      }
+    ]
+  }
+];
+
+let activeCat=null, activeObj=null;
+
+function renderCats(){
+  document.getElementById('cat-grid').innerHTML = data.map(c=>`
+    <div class="cat-card" onclick="selectCat('${c.id}')"
+      onmouseover="this.style.borderColor='${c.accentColor}'"
+      onmouseout="this.style.borderColor='transparent'">
+      <div class="cat-icon">${c.icon}</div>
+      <h3>${c.name}</h3>
+      <p>${c.desc}</p>
+      <div class="badge" style="background:${c.badgeBg};color:${c.badgeColor}">${c.objections.length} objection${c.objections.length!==1?'s':''}</div>
+      <div class="bar" style="background:${c.accentColor}"></div>
+    </div>
+  `).join('');
+}
+
+function selectCat(id){
+  activeCat = data.find(c=>c.id===id);
+  document.getElementById('obj-title').innerHTML = activeCat.icon+' '+activeCat.name;
+  document.getElementById('obj-sub').textContent = "Select the objection that best matches what you're hearing.";
+  document.getElementById('obj-list').innerHTML = activeCat.objections.map(o=>`
+    <div class="obj-item" onclick="selectObj('${o.id}')"
+      onmouseover="this.style.borderColor='${activeCat.accentColor}'"
+      onmouseout="this.style.borderColor='transparent'">
+      <span class="obj-item-text">${o.text}</span>
+      <span class="obj-item-arrow" style="color:${activeCat.accentColor}">→</span>
+    </div>
+  `).join('');
+  goTo('objs');
+}
+
+function selectObj(id){
+  activeObj = activeCat.objections.find(o=>o.id===id);
+  const ac = activeCat.accentColor;
+  const hasDQ = activeObj.discoveryQuestions && activeObj.discoveryQuestions.length;
+
+  const objBox = hasDQ
+    ? `<div style="margin-bottom:22px"><label style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:${ac};display:block;margin-bottom:4px">Objection heard</label><p style="font-size:.95rem;font-weight:600;color:var(--dark)">${activeObj.text}</p></div>`
+    : `<div class="tt-objection" style="border-color:${ac};background:#F7F8FC"><label style="color:${ac}">Objection heard</label><p>${activeObj.text}</p></div>`;
+
+  let dqHtml = '';
+  if(hasDQ){
+    dqHtml = `<div class="tt-section">
+      <h4><span class="dot" style="background:${ac}"></span>Follow-up Question + Talktrack</h4>
+      <div class="dq-list">${activeObj.discoveryQuestions.map(dq=>`
+        <div class="dq-item" style="border-color:${ac}">
+          <div class="dq-q">❓ ${dq.q}</div>
+          <div class="dq-fyi"><strong>FYI</strong>${dq.why}</div>
+          ${dq.tt?`<div class="dq-tt" style="background:${activeCat.badgeBg};color:var(--dark2)">${dq.tt}</div>`:''}
+        </div>
+      `).join('')}</div>
+    </div>`;
+  }
+
+  const ttSection = (!hasDQ && activeObj.talktrack) ? `
+    <div class="tt-section">
+      <h4><span class="dot" style="background:${ac}"></span>Suggested Response</h4>
+      <div class="tt-body">${activeObj.talktrack}</div>
+    </div>` : '';
+
+  document.getElementById('tt-content').innerHTML = `${objBox}${dqHtml}${ttSection}`;
+  goTo('tt');
+}
+
+function goTo(screen){
+  ['cats','objs','tt'].forEach(s=>document.getElementById('screen-'+s).classList.add('hidden'));
+  document.getElementById('screen-'+screen).classList.remove('hidden');
+  updateBreadcrumb(screen);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function updateBreadcrumb(screen){
+  const bc = document.getElementById('breadcrumb');
+  let html = `<span class="bc-link" onclick="goTo('cats')">All Categories</span>`;
+  if(screen==='objs'||screen==='tt') html+=`<span class="sep">›</span><span class="bc-link" onclick="goTo('objs')">${activeCat?.name}</span>`;
+  if(screen==='tt') html+=`<span class="sep">›</span><span style="color:var(--dark2)">Talk Track</span>`;
+  bc.innerHTML = html;
+}
+
+renderCats();
+updateBreadcrumb('cats');
+</script>
+</body>
+</html>
